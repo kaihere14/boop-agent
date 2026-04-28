@@ -357,7 +357,7 @@ Everything lives in `.env.local` (auto-created by `npm run setup`). See `.env.ex
 | `CONVEX_URL` / `VITE_CONVEX_URL` | yes | Convex deployment URL. Written by `npx convex dev`. |
 | `SENDBLUE_API_KEY` / `SENDBLUE_API_SECRET` | yes | From your Sendblue dashboard. |
 | `SENDBLUE_FROM_NUMBER` | yes | Your Sendblue-provisioned number. |
-| `BOOP_MODEL` | no | Default `claude-sonnet-4-6`. |
+| `BOOP_MODEL` | no | Default `claude-sonnet-4-6`. Used as the fallback when no runtime override is set. The user can switch the model at runtime from iMessage ("use opus", "switch to sonnet") via the `set_model` self-tool — that override is stored in the Convex `settings` table and takes precedence over this env var. |
 | `BOOP_UPSTREAM_CHECK` | no | Set to `false` to disable the new-version banner on `npm run dev`. Default: on. |
 | `PORT` | no | Default `3456`. |
 | `PUBLIC_URL` | no | Base URL used in the Sendblue webhook. Composio handles its own OAuth callbacks on `platform.composio.dev`, so this is just for inbound iMessage. |
@@ -380,9 +380,7 @@ Boop outsources 3rd-party service integrations to [Composio](https://composio.de
    COMPOSIO_API_KEY=sk-comp-...
    ```
 3. `npm run dev`.
-4. Open the debug dashboard → **Connections** tab. You'll see a curated list of ~20 cards split into:
-   - **Ready to connect** — Composio manages the OAuth app. Click **Connect**, authenticate on Composio's hosted page, done.
-   - **Needs one-time auth config** — a few toolkits (Twitter/X, LinkedIn, Salesforce) require you to register your own OAuth app on their dev portal and paste the client ID/secret into `platform.composio.dev/auth-configs`. The card's **Set up →** link takes you straight there. Once registered, the card flips to Ready.
+4. Open the debug dashboard → **Connections** tab. You'll see a curated list of ~20 cards. For each one: click **Connect**, authenticate on Composio's hosted page, done — Composio ships managed OAuth for every curated toolkit. (If you add a custom toolkit that needs your own OAuth app, the card flips to a "Set up →" state pointing at `platform.composio.dev/auth-configs` — rare, but supported.)
 
 After a successful connect, the agent can use that toolkit immediately — no restart.
 
@@ -425,7 +423,7 @@ export const CURATED_TOOLKITS: CuratedToolkit[] = [
 ];
 ```
 
-`authMode: "managed"` is correct for most toolkits. Use `"byo"` only if you know Composio requires a custom OAuth app (Twitter/LinkedIn/Salesforce-style). If you guess wrong, the UI's auth-config fallback banner catches it and points you at the right dashboard page.
+`authMode: "managed"` is correct for virtually every toolkit Composio ships today. Use `"byo"` only if Composio doesn't have a hosted OAuth app for that toolkit. If you guess wrong, the UI's auth-config fallback banner catches it and points you at the right dashboard page.
 
 ### Cost tracking
 
